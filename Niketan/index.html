@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travelista Tours Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-decorations">
+        <div class="circle top-left"></div>
+        <div class="circle bottom-right"></div>
+    </div>
+
+    <div class="main-container">
+        <div class="card">
+            <div class="left-panel">
+                <div class="image-overlay">
+                    <h1 class="logo-text">Tourist Niketan</h1>
+                    <p class="tagline">Explore Maharashtra, Feel Aapla Culture</p>
+                </div>
+            </div>
+
+            <div class="right-panel">
+
+                <div class="login-section" id="login-container">
+                    <h2 class="welcome-text" id="auth-title" style="text-align: center;">कसं काय महाराष्ट्र?</h2>
+                    <p class="login-subtitle" id="auth-subtitle">Login with Google</p>
+
+                    <div id="google-btn-container" style="margin-bottom: 50px; min-height: 48px;"></div>
+
+                    <p class="register-text" id="toggle-text">Don't have account? <a href="#" class="register-link"
+                            id="toggle-link">Register Now</a></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        const authTitle = document.getElementById('auth-title');
+        const authSubtitle = document.getElementById('auth-subtitle');
+        const toggleTextNode = document.getElementById('toggle-text');
+
+        const unauthState = document.getElementById('unauth-state');
+        const authState = document.getElementById('auth-state');
+        const userNameEl = document.getElementById('user-name');
+        const userEmailEl = document.getElementById('user-email');
+        const userPfpEl = document.getElementById('user-pfp');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Toggle logic
+        document.body.addEventListener('click', (e) => {
+            if (e.target.id === 'toggle-link') {
+                e.preventDefault();
+                const isLogin = authTitle.textContent.includes('कसं काय पुणेकर?');
+
+                if (isLogin) {
+                    authTitle.textContent = 'Create Account';
+                    authSubtitle.textContent = 'Sign up with Google';
+                    toggleTextNode.innerHTML = `Already have an account? <a href="#" class="register-link" id="toggle-link">Login Now</a>`;
+                } else {
+                    authTitle.textContent = 'कसं काय पुणेकर?';
+                    authSubtitle.textContent = 'Login with Google';
+                    toggleTextNode.innerHTML = `Don't have account? <a href="#" class="register-link" id="toggle-link">Register Now</a>`;
+                }
+            }
+        });
+
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function handleCredentialResponse(response) {
+            const data = parseJwt(response.credential);
+            const user = {
+                name: data.name,
+                email: data.email,
+                picture: data.picture
+            };
+            localStorage.setItem('sessionUser', JSON.stringify(user));
+            window.location.href = 'user-info.html';
+        }
+
+        window.onload = function () {
+            // Check if user has completed the FULL flow (login + user-info)
+            const sessionData = localStorage.getItem('sessionUser');
+            const infoCompleted = localStorage.getItem('userInfoCompleted');
+
+            if (sessionData && infoCompleted) {
+                // Returning user who finished everything → go to main
+                window.location.href = 'main.html';
+                return;
+            }
+
+            // Clear any stale/incomplete session data so login page shows fresh
+            localStorage.removeItem('sessionUser');
+            localStorage.removeItem('userInfoCompleted');
+
+            // Init Google Auth
+            google.accounts.id.initialize({
+                client_id: "809371447759-ocq6iqq8onphfch2jppahvegbt3rs3vf.apps.googleusercontent.com",
+                callback: handleCredentialResponse
+            });
+            google.accounts.id.renderButton(
+                document.getElementById("google-btn-container"),
+                { theme: "outline", size: "large", type: "standard", shape: "rectangular", text: "continue_with", width: 250 }
+            );
+        };
+    </script>
+</body>
+
+</html>

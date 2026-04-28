@@ -1,0 +1,4074 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Niketan - Explore</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Model Viewer for 3D -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <!-- Google Fonts for elegant typography -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Single Background Image */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            /* Updated to use the image you just uploaded! */
+            background-image: url('images/multimodal_bg.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .background-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+            pointer-events: none;
+        }
+
+
+        /* Navigation Bar */
+        .navbar {
+            padding: 20px 80px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+        }
+
+        /* User Profile Area in Navbar */
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: auto;
+        }
+
+        #profile-pic {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            object-fit: cover;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            padding: 6px 15px;
+            font-weight: 400;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        /* Main Hero Section */
+        .hero-section {
+            height: calc(100vh - 120px);
+            display: flex;
+            align-items: center;
+            padding: 0 100px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 78px;
+            font-weight: 600;
+            line-height: 1.1;
+            margin-bottom: 25px;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            line-height: 1.7;
+            opacity: 0.9;
+            max-width: 450px;
+            font-weight: 300;
+        }
+
+        /* Right Side Info Card */
+        .info-card {
+            position: absolute;
+            right: 150px;
+            top: 35%;
+            max-width: 350px;
+            animation: slideInRight 1.2s ease-in-out;
+        }
+
+        .info-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 400;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .info-desc {
+            display: flex;
+            gap: 15px;
+        }
+
+        .info-desc .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            flex-shrink: 0;
+            margin-top: 5px;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .info-desc p {
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Attractions Section */
+        .attractions-section {
+            background-color: #f7fbff;
+            color: #333333;
+            padding: 80px 100px 40px 100px;
+            position: relative;
+            z-index: 100;
+            /* Stays above fixed slider */
+            text-align: center;
+        }
+
+        .attractions-header {
+            margin-bottom: 50px;
+        }
+
+        .attractions-header h2 {
+            font-size: 54px;
+            font-weight: 900;
+            color: #e53935;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .attractions-header p {
+            font-size: 16px;
+            color: #ef5350;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-weight: 500;
+            margin-top: -10px;
+        }
+
+        .attractions-header p::before,
+        .attractions-header p::after {
+            content: "";
+            height: 1px;
+            width: 50px;
+            background-color: #ef9a9a;
+        }
+
+        .attractions-gallery {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: nowrap;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .attraction-card {
+            flex: 1;
+            min-width: 200px;
+            max-width: 350px;
+            aspect-ratio: 3 / 4;
+            height: auto;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .attraction-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-inner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .attraction-card h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .explore-btn {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 15px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .attraction-card:hover .explore-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .attraction-card:hover h4 {
+            transform: translateY(-5px);
+        }
+
+        /* Detail Carousel Modal */
+        .explore-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(235, 240, 245, 0.98);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 30px;
+            right: 50px;
+            font-size: 50px;
+            cursor: pointer;
+            color: #333;
+            z-index: 100;
+        }
+
+        .carousel-track {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 55vw;
+            height: 100%;
+            border-radius: 30px;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: scale(0.6) translateX(0);
+            z-index: 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .carousel-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+            transform: scale(1) translateX(0);
+            z-index: 5;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .carousel-item.prev {
+            opacity: 0.5;
+            transform: scale(0.7) translateX(-70%);
+            z-index: 3;
+        }
+
+        .carousel-item.next {
+            opacity: 0.5;
+            transform: scale(0.7) translateX(70%);
+            z-index: 3;
+        }
+
+        .carousel-info {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            right: 40px;
+            color: white;
+            z-index: 10;
+        }
+
+        .carousel-info h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            color: #ffb703;
+        }
+
+        .carousel-info p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .carousel-info .location-marker {
+            position: absolute;
+            bottom: 5px;
+            right: 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .carousel-controls {
+            display: flex;
+            gap: 40px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .discover-more-btn {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .discover-more-btn:hover {
+            background-color: #cc0000;
+        }
+
+        /* Mood Explorer Section */
+        .mood-explorer-section {
+            background-color: #ffffff;
+            padding: 20px 100px 80px 100px;
+            text-align: center;
+        }
+
+        .mood-header h2 {
+            font-size: 42px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .mood-header p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .mood-search-container {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            position: relative;
+            display: flex;
+        }
+
+        #mood-search {
+            flex: 1;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px 0 0 30px;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #mood-search:focus {
+            border-color: #ff0000;
+        }
+
+        .mood-search-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 0 35px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 0 30px 30px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.1);
+        }
+
+        .mood-search-btn:hover {
+            background: #cc0000;
+        }
+
+        .mood-chips {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .mood-chip {
+            background: #f0f5fa;
+            border: 1px solid #dce5ee;
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .mood-chip:hover,
+        .mood-chip.active {
+            background: #ff0000;
+            color: white;
+            border-color: #ff0000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2);
+        }
+
+        .mood-results {
+            display: flex;
+            justify-content: flex-start;
+            gap: 25px;
+            flex-wrap: nowrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: auto;
+            padding: 10px 20px 30px;
+        }
+
+        .mood-result-card {
+            width: 250px;
+            min-width: 250px;
+            flex-shrink: 0;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: left;
+            border: 1px solid #f0f0f0;
+        }
+
+        .mood-result-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .mood-result-img {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .mood-result-content {
+            padding: 20px;
+        }
+
+        .mood-result-content h4 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .mood-result-content p {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.5;
+        }
+
+        /* Regions Slider */
+        .regions-section {
+            position: relative;
+            padding: 60px 0 40px 0;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        .regions-bg-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 65%;
+            background-color: #e53935;
+            z-index: 1;
+        }
+
+        .regions-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .regions-header h2 {
+            font-size: 54px;
+            font-weight: 900;
+            color: #ffffff;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 2px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .regions-header p {
+            color: #ffffff;
+            font-size: 18px;
+            margin-bottom: 50px;
+            font-family: 'Playfair Display', serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .regions-header p::before,
+        .regions-header p::after {
+            content: "";
+            height: 1px;
+            width: 50px;
+            background-color: #ffffff;
+            opacity: 0.5;
+        }
+
+        .regions-carousel-container {
+            display: flex;
+            align-items: center;
+            position: relative;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .regions-track {
+            display: flex;
+            gap: 25px;
+            overflow-x: auto;
+            padding: 10px 40px 20px 40px;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .regions-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .region-card {
+            min-width: 280px;
+            max-width: 280px;
+            background: #f1f1f1;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: left;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .region-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .region-img {
+            width: 100%;
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .region-info {
+            padding: 25px 20px;
+        }
+
+        .region-tag {
+            color: #ee2e31;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .region-title {
+            color: #111;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .regions-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .regions-controls button {
+            background: transparent;
+            border: none;
+            font-size: 40px;
+            color: #111;
+            cursor: pointer;
+            transition: transform 0.2s;
+            line-height: 1;
+        }
+
+        .regions-controls button:hover {
+            transform: translateX(5px);
+        }
+        .regions-controls button:first-child:hover {
+            transform: translateX(-5px);
+        }
+
+        /* ─── Region Places Panel (Fullscreen) ─── */
+        .region-places-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            background: #f5f5f5;
+            overflow-y: auto;
+            animation: regionSlideUp 0.5s ease;
+        }
+
+        .region-places-overlay.show {
+            display: block;
+        }
+
+        @keyframes regionSlideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .region-places-hero {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .region-places-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(transparent 30%, rgba(0,0,0,0.75));
+        }
+
+        .region-places-hero-content {
+            position: absolute;
+            bottom: 35px;
+            left: 50px;
+            z-index: 3;
+            color: #fff;
+        }
+
+        .region-places-hero-content h2 {
+            font-size: 42px;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .region-places-hero-content p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-top: 6px;
+            font-weight: 300;
+        }
+
+        .region-places-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .region-places-close:hover {
+            background: rgba(229, 57, 53, 0.8);
+        }
+
+        .region-places-body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 40px 60px;
+        }
+
+        .region-places-body h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .region-places-body > p {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .places-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .place-card {
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.35s ease;
+            border: 2px solid transparent;
+        }
+
+        .place-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: #e53935;
+        }
+
+        .place-card-img {
+            width: 100%;
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .place-card-img::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.3));
+        }
+
+        .place-card-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(229, 57, 53, 0.9);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .place-card-info {
+            padding: 18px 18px 20px;
+        }
+
+        .place-card-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+
+        .place-card-info p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .place-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .place-card-footer span {
+            font-size: 12px;
+            color: #e53935;
+            font-weight: 600;
+        }
+
+        .view-3d-tag {
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: white;
+            padding: 5px 14px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* ─── 3D Panorama Viewer Modal ─── */
+        .panorama-viewer-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 6000;
+            background: #0a0a1a;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .panorama-viewer-overlay.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panorama-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 30px;
+            background: rgba(10, 10, 26, 0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            z-index: 10;
+        }
+
+        .panorama-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .panorama-header-left .pano-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .panorama-header-left h3 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .panorama-header-left span {
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .panorama-close {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panorama-close:hover {
+            background: rgba(229, 57, 53, 0.7);
+        }
+
+        .panorama-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .panorama-iframe-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .panorama-iframe-container iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .panorama-info-bar {
+            background: rgba(10, 10, 26, 0.95);
+            padding: 18px 30px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .panorama-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panorama-info-item .info-icon {
+            font-size: 18px;
+        }
+
+        .panorama-info-item .info-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panorama-info-item .info-value {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .panorama-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a1a;
+            z-index: 5;
+            transition: opacity 0.5s ease;
+        }
+
+        .panorama-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pano-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #e53935;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .panorama-loading p {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .places-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            .region-places-hero {
+                height: 220px;
+            }
+            .region-places-hero-content h2 {
+                font-size: 28px;
+            }
+            .region-places-body {
+                padding: 25px 20px 40px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .places-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ─── Detail Modal ─── */
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 2000;
+            overflow-y: auto;
+            animation: detailFadeIn 0.4s ease;
+        }
+
+        @keyframes detailFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-modal.show {
+            display: block;
+        }
+
+        .detail-hero {
+            position: relative;
+            width: 100%;
+            height: 50vh;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .detail-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(transparent 40%, rgba(0,0,0,0.85));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 50px 80px;
+            color: white;
+        }
+
+        .detail-hero-overlay h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .detail-hero-overlay .detail-location {
+            font-size: 16px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-close-btn {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .detail-close-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+        }
+
+        .detail-back-btn {
+            position: absolute;
+            top: 25px;
+            left: 35px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .detail-back-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .detail-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            padding: 50px 80px 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .detail-info h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+        }
+
+        .detail-info p {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .detail-info .read-more-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #e53935;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+
+        .detail-info .read-more-btn:hover {
+            background: #c62828;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 57, 53, 0.3);
+        }
+
+        .detail-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .detail-map {
+            width: 100%;
+            height: 280px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+        }
+
+        .detail-map iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .detail-info-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .detail-info-card .info-row {
+            margin-bottom: 16px;
+        }
+
+        .detail-info-card .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-info-card .info-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e53935;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .detail-info-card .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .detail-weather {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #fff5f5, #fef2f2);
+            border-radius: 10px;
+            border: 1px solid #fecaca;
+        }
+
+        .detail-weather .temp {
+            font-size: 22px;
+            font-weight: 700;
+            color: #e53935;
+        }
+
+        .detail-weather .temp-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        @media (max-width: 900px) {
+            .detail-body {
+                grid-template-columns: 1fr;
+                padding: 30px 20px 50px;
+                gap: 30px;
+            }
+
+            .detail-hero {
+                height: 35vh;
+            }
+
+            .detail-hero-overlay {
+                padding: 30px;
+            }
+
+            .detail-hero-overlay h1 {
+                font-size: 32px;
+            }
+        }
+
+        /* ─── Hidden Gem Button ─── */
+        .hidden-gem-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+            text-decoration: none;
+        }
+
+        .hidden-gem-btn:hover {
+            background: #ffd700;
+            color: #1a1a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.35);
+        }
+
+        .hidden-gem-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* ─── Review Section ─── */
+        .reviews-section {
+            padding: 40px 60px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: 10px;
+        }
+
+        .reviews-section h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 25px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .review-form {
+            background: #f9fafb;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+        }
+
+        .review-form h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .star-rating .star {
+            font-size: 28px;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s, transform 0.15s;
+        }
+
+        .star-rating .star:hover,
+        .star-rating .star.active {
+            color: #ffc107;
+            transform: scale(1.15);
+        }
+
+        .review-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 14px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            resize: vertical;
+            background: #fff;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .review-form textarea:focus {
+            border-color: #e53935;
+        }
+
+        .review-submit-btn {
+            margin-top: 12px;
+            padding: 11px 28px;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .review-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 57, 53, 0.35);
+        }
+
+        .review-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .review-card {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+
+        .review-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .review-card-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .review-card-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .review-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .review-card-date {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .review-card-stars {
+            font-size: 14px;
+            color: #ffc107;
+        }
+
+        .review-card-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .reviews-empty {
+            text-align: center;
+            padding: 30px;
+            color: #aaa;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .reviews-section {
+                padding: 25px 20px;
+            }
+        }
+
+        /* ─── Events & Celebrations Section ─── */
+
+        /* ─── Hidden Gem Scanner Modal ─── */
+        .scanner-modal {
+            position: fixed;
+            inset: 0;
+            background: #0a0a1a;
+            z-index: 5000;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .scanner-modal.show {
+            display: flex;
+        }
+
+        .scanner-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: rgba(10, 10, 26, 0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .scanner-header h2 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scanner-close {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .scanner-close:hover {
+            background: rgba(229, 57, 53, 0.6);
+        }
+
+        .scanner-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 30px;
+            gap: 30px;
+        }
+
+        .scanner-status {
+            text-align: center;
+            color: #aaa;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+
+        .scanner-status .status-highlight {
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .scan-btn {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+            box-shadow: 0 6px 25px rgba(229, 57, 53, 0.4);
+        }
+
+        .scan-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(229, 57, 53, 0.5);
+        }
+
+        .scan-btn .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .scanner-compass {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            border: 3px solid rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .compass-ring {
+            position: absolute;
+            inset: -8px;
+            border: 2px dashed rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .compass-labels {
+            position: absolute;
+            inset: 0;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .compass-labels span {
+            position: absolute;
+        }
+
+        .compass-labels .n { top: -22px; left: 50%; transform: translateX(-50%); color: #e53935; }
+        .compass-labels .s { bottom: -22px; left: 50%; transform: translateX(-50%); }
+        .compass-labels .e { right: -18px; top: 50%; transform: translateY(-50%); }
+        .compass-labels .w { left: -20px; top: 50%; transform: translateY(-50%); }
+
+        #navigation-arrow {
+            width: 60px;
+            height: 60px;
+            transition: transform 0.3s ease;
+        }
+
+        .scanner-distance {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 250px;
+        }
+
+        .scanner-distance .dist-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffd700;
+        }
+
+        .scanner-distance .dist-label {
+            font-size: 13px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .scanner-3d-container {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #111;
+        }
+
+        .scanner-3d-container model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .scanner-info-card {
+            background: linear-gradient(135deg, rgba(229,57,53,0.1), rgba(198,40,40,0.05));
+            border: 1px solid rgba(229,57,53,0.2);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .scanner-info-card h4 {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scanner-nav-row {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .scanner-found {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            width: 100%;
+        }
+
+        .scanner-found.show {
+            display: flex;
+        }
+
+        .scanner-found h3 {
+            color: #4caf50;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .scanner-body { padding: 25px 15px; }
+            .scanner-3d-container { height: 280px; }
+            .scanner-nav-row { flex-direction: column; }
+        }
+        .events-section {
+            background-color: #ffffff;
+            padding: 30px 100px 60px;
+            text-align: center;
+        }
+
+        .events-header {
+            margin-bottom: 15px;
+        }
+
+        .events-header .events-subtitle {
+            font-size: 18px;
+            color: #888;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 0;
+        }
+
+        .events-header .events-subtitle::before,
+        .events-header .events-subtitle::after {
+            content: '';
+            height: 1px;
+            width: 40px;
+            background: #ccc;
+        }
+
+        .events-header h2 {
+            font-size: 54px;
+            font-weight: 900;
+            color: #e53935;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 3px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .events-filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin: 30px auto 10px;
+            flex-wrap: wrap;
+            max-width: 350px;
+            background: #f0f0f0;
+            border-radius: 30px;
+            padding: 4px;
+        }
+
+        .event-main-tab {
+            flex: 1;
+            padding: 12px 32px;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            color: #555;
+            text-align: center;
+        }
+
+        .event-main-tab:hover {
+            color: #333;
+        }
+
+        .event-main-tab.active {
+            background: #e53935;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+        }
+
+        .events-sub-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 18px 0 30px;
+            flex-wrap: wrap;
+        }
+
+        .event-sub-tab {
+            padding: 8px 22px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+            background: #fff;
+            color: #555;
+        }
+
+        .event-sub-tab:hover {
+            border-color: #e53935;
+            color: #e53935;
+        }
+
+        .event-sub-tab.active {
+            background: #1a1a2e;
+            color: #fff;
+            border-color: #1a1a2e;
+        }
+
+        .events-panel {
+            display: none;
+        }
+
+        .events-panel.active {
+            display: block;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .event-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            text-align: left;
+            border: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .event-card-img {
+            position: relative;
+            width: 100%;
+            height: 140px;
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+
+        .event-card-img::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.4));
+        }
+
+        .event-date-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: #e53935;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            z-index: 2;
+            line-height: 1.3;
+            box-shadow: 0 2px 8px rgba(229, 57, 53, 0.4);
+        }
+
+        .event-status-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            z-index: 2;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .event-status-badge.previous {
+            background: rgba(0,0,0,0.5);
+            color: #ccc;
+            backdrop-filter: blur(4px);
+        }
+
+        .event-status-badge.ongoing {
+            background: #4caf50;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .event-status-badge.upcoming {
+            background: #ff9800;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(76, 175, 80, 0); }
+        }
+
+        .event-card-content {
+            padding: 12px 12px;
+        }
+
+        .event-card-content h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .event-card-content p {
+            display: none;
+        }
+
+        .event-card-location {
+            display: none;
+        }
+
+        .events-hidden {
+            display: none !important;
+        }
+
+        /* ─── Event Detail Popup ─── */
+        .event-detail-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .event-detail-overlay.show {
+            display: flex;
+        }
+
+        .event-detail-popup {
+            background: #fff;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            animation: detailFadeIn 0.4s ease;
+        }
+
+        .event-detail-popup-img {
+            width: 100%;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .event-detail-popup-img::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.5));
+        }
+
+        .event-detail-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        .event-detail-close:hover {
+            background: rgba(229, 57, 53, 0.8);
+        }
+
+        .event-detail-popup-badges {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 5;
+        }
+
+        .event-detail-popup-badges .popup-date {
+            background: #e53935;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .event-detail-popup-badges .popup-status {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .event-detail-popup-badges .popup-status.previous {
+            background: rgba(0,0,0,0.5);
+            color: #ddd;
+        }
+
+        .event-detail-popup-badges .popup-status.ongoing {
+            background: #4caf50;
+            color: white;
+        }
+
+        .event-detail-popup-badges .popup-status.upcoming {
+            background: #ff9800;
+            color: white;
+        }
+
+        .event-detail-popup-body {
+            padding: 28px 28px 30px;
+        }
+
+        .event-detail-popup-body h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .event-detail-popup-body .popup-location {
+            font-size: 14px;
+            color: #e53935;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-detail-popup-body .popup-desc {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        @media (max-width: 900px) {
+            .events-section {
+                padding: 50px 20px;
+            }
+            .events-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .events-header h2 {
+                font-size: 36px;
+            }
+            .event-detail-popup {
+                width: 95%;
+                max-height: 90vh;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .events-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .event-card-img {
+                height: 110px;
+            }
+        }
+
+        /* ─── Floating Chatbot Widget ─── */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(229, 57, 53, 0.45);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(229, 57, 53, 0.55);
+        }
+
+        .chatbot-toggle.active {
+            transform: rotate(90deg);
+            background: #333;
+        }
+
+        .chatbot-toggle svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+            transition: transform 0.3s ease;
+        }
+
+        .chatbot-label {
+            position: fixed;
+            bottom: 95px;
+            right: 25px;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 3000;
+            animation: labelBounce 2s ease infinite;
+            white-space: nowrap;
+        }
+
+        .chatbot-label::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 22px;
+            width: 12px;
+            height: 12px;
+            background: #1a1a2e;
+            transform: rotate(45deg);
+        }
+
+        .chatbot-label.hide {
+            display: none;
+        }
+
+        @keyframes labelBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 380px;
+            height: 520px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            z-index: 3001;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chatbot-container.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #e53935, #c62828);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .chatbot-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chatbot-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .chatbot-header-text h4 {
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chatbot-header-text span {
+            color: rgba(255,255,255,0.8);
+            font-size: 11px;
+        }
+
+        .chatbot-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chatbot-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Welcome screen */
+        .chatbot-welcome {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 25px;
+            text-align: center;
+        }
+
+        .chatbot-welcome .welcome-emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .chatbot-welcome h3 {
+            color: #1a1a2e;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .chatbot-welcome p {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .chatbot-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .suggestion-chip {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #e53935;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .suggestion-chip:hover {
+            background: #e53935;
+            color: #fff;
+            border-color: #e53935;
+            transform: translateY(-1px);
+        }
+
+        /* Chat display area */
+        #chat-display-area {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 16px 18px;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        #chat-display-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #chat-display-area::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 4px;
+        }
+
+        /* Chat input area */
+        .chatbot-input-area {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            gap: 10px;
+            border-top: 1px solid #f0f0f0;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .chatbot-input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 13px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            background: #f9fafb;
+            transition: border-color 0.2s;
+        }
+
+        .chatbot-input-area input:focus {
+            border-color: #e53935;
+            background: #fff;
+        }
+
+        .chatbot-input-area button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #e53935, #c62828);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chatbot-input-area button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+        }
+
+        .chatbot-input-area button svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        @media (max-width: 500px) {
+            .chatbot-container {
+                width: calc(100vw - 20px);
+                height: calc(100vh - 120px);
+                right: 10px;
+                bottom: 85px;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Single Background Image -->
+    <div class="background-container">
+        <div class="background-overlay"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="navbar-brand">Tourist Niketan</div>
+            <div class="nav-links">
+                <a href="#">Discover</a>
+                <a href="#">Maharashtra's History</a>
+                <a href="#">Events</a>
+                <a href="#">Publications</a>
+            </div>
+        </div>
+
+        <div class="user-nav">
+            <img id="profile-pic" src="" alt="User" title="User Profile">
+            <button id="logout-btn" class="logout-btn">Log Out</button>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Discover<br>Maharashtra.</h1>
+            <p class="hero-subtitle">From timeless monuments to iconic landmarks, explore the history and culture behind
+                Maharashtra's greatest destinations.</p>
+        </div>
+    </div>
+
+    <section class="attractions-section">
+        <div class="attractions-header">
+            <h2>MAHARASHTRA</h2>
+            <p>Where Every Journey Tells a Story</p>
+        </div>
+        <div class="attractions-gallery">
+            <div class="attraction-card" style="background-image: url('images/slider5.jpg')">
+                <div class="card-inner-overlay">
+                    <h4>Pune</h4>
+                    <button class="explore-btn" onclick="openExploreModal(0)">Explore</button>
+                </div>
+            </div>
+            <div class="attraction-card" style="background-image: url('images/nashik_temple.jpg')">
+                <div class="card-inner-overlay">
+                    <h4>Nashik</h4>
+                    <button class="explore-btn" onclick="openExploreModal(7)">Explore</button>
+                </div>
+            </div>
+            <div class="attraction-card" style="background-image: url('images/mumbai.jpg')">
+                <div class="card-inner-overlay">
+                    <h4>Mumbai</h4>
+                    <button class="explore-btn" onclick="openExploreModal(14)">Explore</button>
+                </div>
+            </div>
+            <div class="attraction-card" style="background-image: url('images/kolhapur.png')">
+                <div class="card-inner-overlay">
+                    <h4>Kolhapur</h4>
+                    <button class="explore-btn" onclick="openExploreModal(21)">Explore</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mood Explorer Section -->
+    <section class="mood-explorer-section" id="mood-section">
+        <div class="mood-header">
+            <h2>Let Your Vibe Guide You</h2>
+            <p>Discover places that match your moment.</p>
+        </div>
+
+        <div class="mood-search-container">
+            <input type="text" id="mood-search" placeholder="Type your mood... (e.g. spiritual, nature, history)"
+                oninput="handleMoodSearch()">
+            <button class="mood-search-btn" onclick="handleMoodSearch()">Search</button>
+        </div>
+
+        <div class="mood-chips">
+            <button class="mood-chip" onclick="selectMood('spiritual', this)">🧘 Spiritual</button>
+            <button class="mood-chip" onclick="selectMood('historic', this)">🏰 Historical</button>
+            <button class="mood-chip" onclick="selectMood('nature', this)">🌲 Nature & Peace</button>
+            <button class="mood-chip" onclick="selectMood('city', this)">🏙️ City Vibes</button>
+        </div>
+
+        <div class="mood-results" id="mood-results">
+            <!-- Suggested places populated here -->
+        </div>
+    </section>
+
+    <!-- Regions of Maharashtra Section -->
+    <section class="regions-section">
+        <div class="regions-bg-banner"></div>
+        <div class="regions-content">
+            <div class="regions-header">
+                <h2>REGIONS OF MAHARASHTRA</h2>
+                <p>explore the diverse cultures</p>
+            </div>
+            
+            <div class="regions-carousel-container">
+                <div class="regions-track" id="regionsTrack">
+                    <!-- Kokan -->
+                    <div class="region-card">
+                        <div class="region-img" style="background-image: url('images/kokan_coast.png')"></div>
+                        <div class="region-info">
+                            <div class="region-tag">Kokan</div>
+                            <div class="region-title">Coastal Beauty</div>
+                        </div>
+                    </div>
+                    <!-- Paschim Maharashtra -->
+                    <div class="region-card">
+                        <div class="region-img" style="background-image: url('images/paschim_maharashtra.png')"></div>
+                        <div class="region-info">
+                            <div class="region-tag">Paschim Maharashtra</div>
+                            <div class="region-title">Cultural Heartland</div>
+                        </div>
+                    </div>
+                    <!-- Marathwada -->
+                    <div class="region-card">
+                        <div class="region-img" style="background-image: url('images/ellora_caves.jpg')"></div>
+                        <div class="region-info">
+                            <div class="region-tag">Marathwada</div>
+                            <div class="region-title">Historical Legacy</div>
+                        </div>
+                    </div>
+                    <!-- Khandesh -->
+                    <div class="region-card">
+                        <div class="region-img" style="background-image: url('images/historic_3.jpg')"></div>
+                        <div class="region-info">
+                            <div class="region-tag">Khandesh</div>
+                            <div class="region-title">Nature Reserve</div>
+                        </div>
+                    </div>
+                    <!-- Vidarbha -->
+                    <div class="region-card">
+                        <div class="region-img" style="background-image: url('images/vidarbha_temple.jpg')"></div>
+                        <div class="region-info">
+                            <div class="region-tag">Vidarbha</div>
+                            <div class="region-title">Spiritual Peace</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="regions-controls">
+                <button onclick="document.getElementById('regionsTrack').scrollBy({left: -320, behavior: 'smooth'})">&#8592;</button>
+                <button onclick="document.getElementById('regionsTrack').scrollBy({left: 320, behavior: 'smooth'})">&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events & Celebrations Section -->
+    <section class="events-section" id="events-section">
+        <div class="events-header">
+            <p class="events-subtitle">Every day a</p>
+            <h2>CELEBRATION</h2>
+        </div>
+
+        <!-- Main Tabs: Festivals / Events -->
+        <div class="events-filter-tabs">
+            <button class="event-main-tab active" onclick="switchMainTab('festivals', this)">Festivals</button>
+            <button class="event-main-tab" onclick="switchMainTab('events', this)">Events</button>
+        </div>
+
+        <!-- ═══════ FESTIVALS PANEL ═══════ -->
+        <div class="events-panel active" id="festivals-panel">
+            <div class="events-sub-tabs">
+                <button class="event-sub-tab active" onclick="filterFestivals('all', this)">All</button>
+                <button class="event-sub-tab" onclick="filterFestivals('previous', this)">Previous</button>
+                <button class="event-sub-tab" onclick="filterFestivals('ongoing', this)">Ongoing</button>
+                <button class="event-sub-tab" onclick="filterFestivals('upcoming', this)">Upcoming</button>
+            </div>
+
+            <div class="events-grid" id="festivals-grid">
+                <div class="event-card" data-status="previous">
+                    <div class="event-card-img" style="background-image: url('images/gudi_padwa.png')">
+                        <div class="event-date-badge">30 Mar</div>
+                        <div class="event-status-badge previous">Completed</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Gudi Padwa: Marathi New Year — A celebration of new beginnings</h4>
+                        <p>The Maharashtrian New Year celebrated with Gudis on every balcony, Puran Poli feasts, and Shobha Yatras.</p>
+                        <div class="event-card-location">📍 All of Maharashtra</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-status="previous">
+                    <div class="event-card-img" style="background-image: url('images/diwali_maharashtra.png')">
+                        <div class="event-date-badge">20-24 Oct</div>
+                        <div class="event-status-badge previous">Completed</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Diwali &amp; Diwali Padwa: The festival of lights, love and togetherness</h4>
+                        <p>Maharashtra celebrates with Abhyanga Snan, Padwa Bhaubeej, fort illuminations, and traditional faral sweets.</p>
+                        <div class="event-card-location">📍 All of Maharashtra</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-status="ongoing">
+                    <div class="event-card-img" style="background-image: url('images/mogra_festival.png')">
+                        <div class="event-date-badge">Apr – May</div>
+                        <div class="event-status-badge ongoing">● Live Now</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Mogra Festival at Dagdusheth: Fragrant devotion in full bloom</h4>
+                        <p>Dagdusheth Ganpati Temple adorned with lakhs of fragrant mogra flowers, creating a divine atmosphere.</p>
+                        <div class="event-card-location">📍 Dagdusheth Temple, Pune</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-status="ongoing">
+                    <div class="event-card-img" style="background-image: url('images/spiritual_2.jpg')">
+                        <div class="event-date-badge">6 Apr</div>
+                        <div class="event-status-badge ongoing">● Live Now</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Ram Navami: Celebrating the birth of Lord Rama across temples</h4>
+                        <p>Grand celebrations at temples with Ram Janmotsav, kirtans, decorated pandals, and prasad distribution.</p>
+                        <div class="event-card-location">📍 Temples across Maharashtra</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-status="upcoming">
+                    <div class="event-card-img" style="background-image: url('images/pandharpur_wari.png')">
+                        <div class="event-date-badge">Jun – Jul</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Pandharpur Wari: The sacred pilgrimage of Maharashtra's soul</h4>
+                        <p>Millions of Warkaris walk 250+ km from Dehu &amp; Alandi to Pandharpur. A spiritual journey like no other.</p>
+                        <div class="event-card-location">📍 Pune to Pandharpur</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-status="upcoming">
+                    <div class="event-card-img" style="background-image: url('images/ganesh_chaturthi.png')">
+                        <div class="event-date-badge">22 Aug</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Ganesh Chaturthi: Maharashtra's grandest celebration of the year</h4>
+                        <p>The 10-day festival with thousands of Ganesh pandals, dhol-tasha processions, and iconic Visarjan.</p>
+                        <div class="event-card-location">📍 Pune &amp; Mumbai</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-status="upcoming">
+                    <div class="event-card-img" style="background-image: url('images/navratri_maharashtra.png')">
+                        <div class="event-date-badge">2-11 Oct</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Navratri &amp; Dandiya: Nine nights of dance, devotion and color</h4>
+                        <p>Maharashtra comes alive with Dandiya Raas, Garba nights, and grand Durga Puja celebrations.</p>
+                        <div class="event-card-location">📍 All of Maharashtra</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ EVENTS PANEL ═══════ -->
+        <div class="events-panel" id="events-panel">
+            <div class="events-sub-tabs">
+                <button class="event-sub-tab active" onclick="filterCityEvents('all', this)">All Events</button>
+                <button class="event-sub-tab" onclick="filterCityEvents('pune', this)">🏙️ Pune</button>
+                <button class="event-sub-tab" onclick="filterCityEvents('mumbai', this)">🌆 Mumbai</button>
+                <button class="event-sub-tab" onclick="filterCityEvents('other', this)">🌍 Other</button>
+            </div>
+
+            <div class="events-grid" id="events-city-grid">
+                <!-- Pune Events -->
+                <div class="event-card" data-city="pune">
+                    <div class="event-card-img" style="background-image: url('images/mogra_festival.png')">
+                        <div class="event-date-badge">Apr – May</div>
+                        <div class="event-status-badge ongoing">● Live Now</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Mogra Festival — Dagdusheth Ganpati Temple</h4>
+                        <p>The iconic temple decorated with lakhs of fragrant mogra flowers. A unique devotional experience exclusive to Pune.</p>
+                        <div class="event-card-location">📍 Budhwar Peth, Pune</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-city="pune">
+                    <div class="event-card-img" style="background-image: url('images/ganesh_chaturthi.png')">
+                        <div class="event-date-badge">22 Aug</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Pune Ganeshotsav — The 5 Manache Ganpati Procession</h4>
+                        <p>Dagdusheth, Kasba, Tambdi Jogeshwari, Guruji Talim &amp; Tulsi Baug — Pune's legendary 5 Ganpati mandals.</p>
+                        <div class="event-card-location">📍 Laxmi Road, Pune</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-city="pune">
+                    <div class="event-card-img" style="background-image: url('images/historic_1.jpg')">
+                        <div class="event-date-badge">1 Jun</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Shivaji Maharaj Rajyabhishek Sohala — Coronation Day</h4>
+                        <p>Grand celebrations at Shaniwar Wada and forts commemorating the coronation of Chhatrapati Shivaji Maharaj.</p>
+                        <div class="event-card-location">📍 Shaniwar Wada, Pune</div>
+                    </div>
+                </div>
+
+                <!-- Mumbai Events -->
+                <div class="event-card" data-city="mumbai">
+                    <div class="event-card-img" style="background-image: url('images/ganesh_chaturthi.png')">
+                        <div class="event-date-badge">22 Aug</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Lalbaugcha Raja Darshan — Mumbai's King of Ganpati</h4>
+                        <p>The most visited Ganesh pandal in India. Millions queue for hours to seek blessings during the 10-day festival.</p>
+                        <div class="event-card-location">📍 Lalbaug, Mumbai</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-city="mumbai">
+                    <div class="event-card-img" style="background-image: url('images/navratri_maharashtra.png')">
+                        <div class="event-date-badge">2-11 Oct</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Falguni Pathak Dandiya Night — Mumbai's biggest Garba</h4>
+                        <p>The legendary Falguni Pathak performs live. Thousands dance through the night in colorful attire.</p>
+                        <div class="event-card-location">📍 NESCO, Goregaon, Mumbai</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-city="mumbai">
+                    <div class="event-card-img" style="background-image: url('images/city_1.jpg')">
+                        <div class="event-date-badge">26 Jan</div>
+                        <div class="event-status-badge previous">Completed</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Kala Ghoda Arts Festival — Mumbai's cultural extravaganza</h4>
+                        <p>A 9-day celebration of art, music, dance, theatre, and food in South Mumbai's iconic heritage precinct.</p>
+                        <div class="event-card-location">📍 Kala Ghoda, Mumbai</div>
+                    </div>
+                </div>
+
+                <!-- Other Events -->
+                <div class="event-card" data-city="other">
+                    <div class="event-card-img" style="background-image: url('images/pandharpur_wari.png')">
+                        <div class="event-date-badge">Jun – Jul</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Pandharpur Wari — Maharashtra's largest spiritual gathering</h4>
+                        <p>The Palkhi procession from Alandi &amp; Dehu through Saswad, Jejuri, and Wakhari to Pandharpur Temple.</p>
+                        <div class="event-card-location">📍 Pandharpur, Solapur</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-city="other">
+                    <div class="event-card-img" style="background-image: url('images/nashik_temple.jpg')">
+                        <div class="event-date-badge">Aug – Sep</div>
+                        <div class="event-status-badge upcoming">Coming Soon</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Nashik Kumbh Mela Preparations — The sacred city readies</h4>
+                        <p>Nashik's Ramkund ghat and Trimbakeshwar begin preparations for the next Simhastha Kumbh Mela.</p>
+                        <div class="event-card-location">📍 Nashik, Maharashtra</div>
+                    </div>
+                </div>
+
+                <div class="event-card" data-city="other">
+                    <div class="event-card-img" style="background-image: url('images/ellora_caves.jpg')">
+                        <div class="event-date-badge">Jan – Feb</div>
+                        <div class="event-status-badge previous">Completed</div>
+                    </div>
+                    <div class="event-card-content">
+                        <h4>Ellora-Ajanta Festival — Aurangabad's cultural showcase</h4>
+                        <p>A grand festival of classical dance and music in the shadow of the UNESCO World Heritage Caves.</p>
+                        <div class="event-card-location">📍 Aurangabad, Maharashtra</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Detail Popup -->
+    <div class="event-detail-overlay" id="event-detail-overlay" onclick="closeEventPopup(event)">
+        <div class="event-detail-popup">
+            <div class="event-detail-popup-img" id="event-popup-img">
+                <button class="event-detail-close" onclick="closeEventPopup(event)">×</button>
+                <div class="event-detail-popup-badges">
+                    <span class="popup-date" id="event-popup-date"></span>
+                    <span class="popup-status" id="event-popup-status"></span>
+                </div>
+            </div>
+            <div class="event-detail-popup-body">
+                <h3 id="event-popup-title"></h3>
+                <div class="popup-location" id="event-popup-location"></div>
+                <p class="popup-desc" id="event-popup-desc"></p>
+            </div>
+        </div>
+    </div>
+    <!-- Explore Modal Carousel -->
+    <div id="explore-modal" class="explore-modal">
+        <div class="close-modal" onclick="closeExploreModal()">&times;</div>
+        <div class="carousel-track" id="carousel-track">
+            <!-- Carousel items dynamically injected here -->
+        </div>
+        <div class="carousel-controls">
+            <span onclick="prevSlide()">&#8592;</span>
+            <span onclick="nextSlide()">&#8594;</span>
+        </div>
+        <button class="discover-more-btn" onclick="openDetailModal()">Discover more</button>
+    </div>
+
+    <!-- Place Detail Modal -->
+    <div id="detail-modal" class="detail-modal">
+        <div class="detail-hero" id="detail-hero">
+            <button class="detail-back-btn" onclick="closeDetailModal()">← Back to Explore</button>
+            <button class="detail-close-btn" onclick="closeDetailModal()">&times;</button>
+            <div class="detail-hero-overlay">
+                <h1 id="detail-title"></h1>
+                <div class="detail-location">
+                    <span>📍</span>
+                    <span id="detail-location"></span>
+                </div>
+            </div>
+        </div>
+        <div class="detail-body">
+            <div class="detail-info">
+                <h2 id="detail-subtitle"></h2>
+                <p id="detail-description"></p>
+                <a class="read-more-btn" id="detail-maps-link" href="#" target="_blank">Open in Google Maps</a>
+                <button class="hidden-gem-btn" id="hidden-gem-btn" onclick="scanHiddenGem()">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    Scan for hidden secret
+                </button>
+            </div>
+            <div class="detail-sidebar">
+                <div class="detail-map" id="detail-map-container">
+                    <!-- Map iframe injected by JS -->
+                </div>
+                <div class="detail-info-card">
+                    <div class="detail-weather" id="detail-weather">
+                        <div>
+                            <div class="temp" id="detail-temp"></div>
+                            <div class="temp-label">Current Season</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 18px;">
+                        <div class="info-row">
+                            <div class="info-label">Nearest Airport</div>
+                            <div class="info-value" id="detail-airport"></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Nearest Railway Station</div>
+                            <div class="info-value" id="detail-railway"></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Best Time to Visit</div>
+                            <div class="info-value" id="detail-best-time"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Section -->
+        <div class="reviews-section">
+            <h3>💬 Reviews & Ratings</h3>
+            <div class="review-form">
+                <h4>Share your experience</h4>
+                <div class="star-rating" id="star-rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <textarea id="review-text" placeholder="Write your review about this place..."></textarea>
+                <button class="review-submit-btn" id="review-submit-btn" onclick="submitReview()">Submit Review</button>
+            </div>
+            <div class="reviews-list" id="reviews-list">
+                <div class="reviews-empty">Loading reviews...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Gem Scanner Modal -->
+    <div class="scanner-modal" id="scanner-modal">
+        <div class="scanner-header">
+            <h2>🔍 Hidden Gem Scanner</h2>
+            <button class="scanner-close" onclick="closeScanner()">&times;</button>
+        </div>
+
+        <div class="scanner-body" id="scanner-body">
+            <div class="scanner-info-card">
+                <h4>🏰 Chhatrapati Shivaji Maharaj's Legacy</h4>
+                <p>You're about to explore the majestic Raigad Fort — the capital of the Maratha Empire. This scanner uses Bluetooth beacons & GPS to guide you to the Great Gate (Maha Darwaja).</p>
+            </div>
+
+            <div class="scanner-compass">
+                <div class="compass-ring"></div>
+                <div class="compass-labels">
+                    <span class="n">N</span>
+                    <span class="s">S</span>
+                    <span class="e">E</span>
+                    <span class="w">W</span>
+                </div>
+                <svg id="navigation-arrow" viewBox="0 0 100 100" fill="none">
+                    <polygon points="50,10 35,65 50,55 65,65" fill="#e53935" />
+                    <polygon points="50,90 35,65 50,55 65,65" fill="#666" />
+                </svg>
+            </div>
+
+            <div class="scanner-nav-row">
+                <div class="scanner-distance">
+                    <div class="dist-value&nbsp" id="scanner-dist">--</div>
+                    <div class="dist-label">Distance to Maha Darwaja</div>
+                </div>
+            </div>
+
+            <p class="scanner-status" id="scanner-status">Tap the button below to start scanning for the <span class="status-highlight">Chhatrapati Beacon</span> at the fort entrance.</p>
+
+            <button class="scan-btn" id="scan-btn" onclick="startBeaconScan()">
+                <div class="pulse-dot"></div>
+                Scan for Beacon
+            </button>
+
+            <!-- Found state -->
+            <div class="scanner-found" id="scanner-found">
+                <h3>✅ Beacon Detected — Welcome to Raigad Fort!</h3>
+                <div class="scanner-3d-container" id="fort-view">
+                    <model-viewer 
+                        src="models/raigad_fort.glb" 
+                        alt="Raigad Fort 3D Model" 
+                        auto-rotate 
+                        camera-controls 
+                        touch-action="pan-y"
+                        shadow-intensity="1"
+                        style="width:100%; height:100%; background: #e8e5e5;">
+                    </model-viewer>
+                </div>
+                <div class="scanner-info-card">
+                    <h4>🏛️ Raigad Fort — Capital of the Maratha Empire</h4>
+                    <p>Raigad Fort was the capital of the Maratha king Chhatrapati Shivaji Maharaj. The fort is situated at 2,700 ft above sea level. The coronation of Shivaji Maharaj took place here on June 6, 1674.</p>
+                    <p style="margin-top:8px;">The Maha Darwaja (Great Gate) is one of the most impressive gateways in Indian fort architecture, standing at 66 feet tall with massive double doors studded with iron spikes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            // Retrieve session data from localStorage
+            const sessionData = localStorage.getItem('sessionUser');
+
+            if (!sessionData) {
+                // Not authenticated, redirect back to login
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const user = JSON.parse(sessionData);
+            document.getElementById('profile-pic').src = user.picture;
+        }
+
+        // Logout Event
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('sessionUser');
+            localStorage.removeItem('userInfoCompleted');
+            window.location.href = 'index.html';
+        });
+
+        // Explore Modal Logic
+        let currentExploreIndex = 0;
+        let cityStart = 0;
+        let cityEnd = 7; // exclusive
+
+        function openExploreModal(index) {
+            // Determine city range based on starting index
+            if (index >= 0 && index < 7) { cityStart = 0; cityEnd = 7; }
+            else if (index >= 7 && index < 14) { cityStart = 7; cityEnd = 14; }
+            else if (index >= 14 && index < 21) { cityStart = 14; cityEnd = 21; }
+            else if (index >= 21 && index < 28) { cityStart = 21; cityEnd = 28; }
+
+            currentExploreIndex = index;
+            document.getElementById('explore-modal').style.display = 'flex';
+            updateCarousel();
+        }
+
+        function closeExploreModal() {
+            document.getElementById('explore-modal').style.display = 'none';
+        }
+
+        function nextSlide() {
+            currentExploreIndex = currentExploreIndex + 1 >= cityEnd
+                ? cityStart
+                : currentExploreIndex + 1;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentExploreIndex = currentExploreIndex - 1 < cityStart
+                ? cityEnd - 1
+                : currentExploreIndex - 1;
+            updateCarousel();
+        }
+
+        function updateCarousel() {
+            const track = document.getElementById('carousel-track');
+            track.innerHTML = '';
+            const cityCount = cityEnd - cityStart;
+
+            // Only render cards within the active city range
+            for (let i = cityStart; i < cityEnd; i++) {
+                const data = exploreData[i];
+                let className = 'carousel-item';
+
+                if (i === currentExploreIndex) {
+                    className += ' active';
+                } else {
+                    // Calculate prev/next within city range
+                    const prevIdx = currentExploreIndex - 1 < cityStart ? cityEnd - 1 : currentExploreIndex - 1;
+                    const nextIdx = currentExploreIndex + 1 >= cityEnd ? cityStart : currentExploreIndex + 1;
+
+                    if (i === prevIdx) className += ' prev';
+                    else if (i === nextIdx) className += ' next';
+                    else className += ' hidden';
+                }
+
+                const el = document.createElement('div');
+                el.className = className;
+                el.style.backgroundImage = `url('${data.img}')`;
+                el.innerHTML = `
+                    <div class="carousel-info">
+                        <h3>${data.title}</h3>
+                        <p>${data.subtitle}</p>
+                        <div class="location-marker">📍 ${data.location}</div>
+                    </div>
+                `;
+                track.appendChild(el);
+            }
+        }
+        const exploreData = [
+            {
+                title: "Dagdusheth Ganpati Temple",
+                subtitle: "Pune's most beloved Ganpati temple",
+                location: "Pune, Maharashtra",
+                img: "slider5.jpg",
+                description: "The Dagdusheth Halwai Ganapati Temple is one of the most famous and richest temples in Pune, dedicated to Lord Ganesha. Built in 1893 by Dagdusheth Halwai, a sweetmeat seller, the temple was constructed in memory of his young son who died of plague. The idol is adorned with nearly 40 kg of gold ornaments, making it a stunning sight for devotees and visitors alike.\n\nThe temple is centrally located near Shaniwar Wada and is visited by thousands of devotees daily. During the Ganesh Chaturthi festival, the temple becomes the epicenter of celebrations in Pune, attracting lakhs of visitors from across India.",
+                lat: 18.5163,
+                lng: 73.8567,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Pune Junction Railway Station",
+                bestTime: "September – February",
+                temp: "22 – 34°C"
+            },
+            {
+                title: "Sarasbaug",
+                subtitle: "A peaceful garden with a famous Ganpati temple",
+                location: "Pune, Maharashtra",
+                img: "nashik.jpg",
+                description: "Sarasbaug is one of the oldest and most popular gardens in Pune, originally built by the Peshwa rulers. The garden is home to the famous Talyatla Ganpati, a revered Ganesha idol placed in the center of a small pond. The park spans a vast area with well-maintained lawns, jogging tracks, and play areas.\n\nSarasbaug is a favorite among locals for morning walks, yoga sessions, and family outings. The serene atmosphere, combined with the historical Ganpati temple, makes it a perfect blend of nature, peace, and spirituality in the heart of the city.",
+                lat: 18.5003,
+                lng: 73.8567,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Swargate Bus Stand / Pune Junction",
+                bestTime: "October – March",
+                temp: "20 – 32°C"
+            },
+            {
+                title: "Shaniwar Wada",
+                subtitle: "A symbol of Pune's history and Maratha legacy",
+                location: "Pune, Maharashtra",
+                img: "shaniwar_modal.jpg",
+                description: "Shaniwar Wada is a majestic historical fortification in the heart of Pune, built in 1732 by Bajirao I of the Peshwa dynasty. It served as the seat of the Peshwa rulers of the Maratha Empire until 1818. The fort was largely destroyed in a fire in 1828, but the massive walls, grand gateway, and the lotus-shaped fountain still stand as a proud testament to Maratha architecture.\n\nThe fort hosts a mesmerizing Sound and Light Show every evening that narrates the story of the Peshwas and the glorious Maratha Empire. Walking through its ruins, one can almost feel the echoes of a powerful empire that once ruled much of India.",
+                lat: 18.5196,
+                lng: 73.8553,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Pune Junction Railway Station",
+                bestTime: "October – February",
+                temp: "18 – 30°C"
+            },
+            {
+                title: "Friendship Garden",
+                subtitle: "A beautiful garden inspired by Japanese design",
+                location: "Pune, Maharashtra",
+                img: "sarasbaug_park.png",
+                description: "The Pune-Okayama Friendship Garden, commonly known as Friendship Garden, is a Japanese-inspired garden established in 2007 to celebrate the sister-city relationship between Pune and Okayama, Japan. Spanning 10 acres, the garden features a beautiful bamboo grove, stone lanterns, a zen rock garden, and a serene koi fish pond.\n\nThe garden offers a unique escape from the bustling city, with winding pathways through manicured landscapes that evoke the tranquility of traditional Japanese gardens. It is one of the largest gardens of its kind in India and a favorite spot for photography, meditation, and peaceful strolls.",
+                lat: 18.5365,
+                lng: 73.8260,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Shivajinagar Railway Station",
+                bestTime: "August – January",
+                temp: "20 – 33°C"
+            },
+            {
+                title: "Streets Of Europe",
+                subtitle: "European-style architecture and vibrant vibes",
+                location: "Pune, Maharashtra",
+                img: "slider1.jpg",
+                description: "Streets of Europe is a unique commercial and entertainment destination in Pune that recreates the charm of European boulevards right in the heart of India. Featuring stunning European-style facades, cobblestone-inspired pathways, and vibrant outdoor cafes, this destination offers a one-of-a-kind experience.\n\nVisitors can enjoy a variety of international cuisines, boutique shopping, and live entertainment amidst architecture inspired by the streets of Paris, Venice, and Barcelona. The vibrant atmosphere, colorful buildings, and Instagram-worthy corners make it a must-visit spot for food lovers and photography enthusiasts.",
+                lat: 18.5617,
+                lng: 73.9168,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Hadapsar Railway Station",
+                bestTime: "Year-round",
+                temp: "22 – 35°C"
+            },
+            {
+                title: "Sky Walk",
+                subtitle: "A perfect spot to enjoy city views from above",
+                location: "Pune, Maharashtra",
+                img: "slider3.png",
+                description: "The Sky Walk near Pune offers a breathtaking aerial experience where visitors can walk on a glass-floor bridge suspended high above the ground. This thrilling attraction provides panoramic views of the surrounding Sahyadri mountains, lush green valleys, and the winding rivers below.\n\nIdeal for adventure seekers and nature lovers alike, the Sky Walk combines the excitement of height with the beauty of Maharashtra's Western Ghats. The transparent glass walkway creates a sensation of walking on air, making it an unforgettable experience for visitors of all ages.",
+                lat: 18.6165,
+                lng: 73.7574,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Lonavala Railway Station",
+                bestTime: "October – March",
+                temp: "18 – 28°C"
+            },
+            {
+                title: "Pataleshwar Cave Temple",
+                subtitle: "An ancient rock-cut cave temple dedicated to Lord Shiva",
+                location: "Pune, Maharashtra",
+                img: "cave_modal.jpg",
+                description: "The Pataleshwar Cave Temple is an ancient rock-cut temple dating back to the 8th century, carved entirely out of a single basalt rock. Dedicated to Lord Shiva (Pataleshwar — Lord of the Underworld), this temple is a remarkable example of early Indian rock-cut architecture, similar to the famous Elephanta Caves.\n\nLocated in the heart of Pune on Jangli Maharaj Road, the temple features a Nandi mandapa (hall), a circular sanctum with a Shivalinga, and beautiful stone carvings. Despite being an incomplete excavation, it stands as one of Pune's most important heritage sites and a peaceful retreat in the middle of the city's chaos.",
+                lat: 18.5214,
+                lng: 73.8429,
+                airport: "Pune International Airport (PNQ)",
+                railway: "Shivajinagar Railway Station",
+                bestTime: "October – February",
+                temp: "20 – 32°C"
+            },
+            // ─── Nashik Places (index 7-9) ───
+            {
+                title: "Trimbakeshwar Temple",
+                subtitle: "One of the 12 Jyotirlingas of Lord Shiva",
+                location: "Nashik, Maharashtra",
+                img: "trimbakeshwar.jpg",
+                description: "Trimbakeshwar Temple is one of the twelve sacred Jyotirlinga shrines dedicated to Lord Shiva, located at the source of the Godavari river near the Brahmagiri mountain. The temple was built by Peshwa Balaji Baji Rao (Nana Saheb) in the 18th century using black stone.\n\nUnlike other Jyotirlingas, the lingam here has three faces representing Brahma, Vishnu, and Shiva. The temple is surrounded by sacred kunds (water tanks) and is a major pilgrimage destination during the Kumbh Mela, which is held here every 12 years.",
+                lat: 19.9322,
+                lng: 73.5311,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "October – March",
+                temp: "18 – 35°C"
+            },
+            {
+                title: "Sula Vineyards",
+                subtitle: "India's most famous wine destination",
+                location: "Nashik, Maharashtra",
+                img: "sula_vineyards.jpg",
+                description: "Sula Vineyards is India's leading wine brand and its vineyard in Nashik is a stunning destination set against the backdrop of the Sahyadri mountains. Founded in 1999 by Rajeev Samant, Sula pioneered the Indian wine revolution.\n\nVisitors can enjoy guided vineyard tours, wine tasting sessions, and gourmet meals at The Source restaurant. The annual SulaFest music and wine festival attracts thousands. The sunset views from the tasting room are spectacular, making it one of the most Instagrammed spots in Maharashtra.",
+                lat: 20.0063,
+                lng: 73.6767,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "September – March",
+                temp: "20 – 32°C"
+            },
+            {
+                title: "Pandavleni Caves",
+                subtitle: "Ancient Buddhist rock-cut caves dating to 1st century BCE",
+                location: "Nashik, Maharashtra",
+                img: "pandavleni_caves.jpg",
+                description: "The Pandavleni Caves, also known as Trirashmi Caves, are a group of 24 Buddhist caves carved out of basalt rock between the 1st century BCE and 3rd century CE. These caves served as viharas (monasteries) and chaityas (prayer halls) for Buddhist monks.\n\nThe caves feature intricate carvings, inscriptions in Brahmi script, and stunning views of Nashik city from the hilltop. Cave 3 is the most impressive with detailed carvings of Buddha, and Cave 18 has an elegant chaitya hall. The 500-step climb is rewarded with panoramic views.",
+                lat: 19.9700,
+                lng: 73.7600,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "October – February",
+                temp: "18 – 30°C"
+            },
+            {
+                title: "Ramkund",
+                subtitle: "The sacred bathing ghat on the banks of Godavari",
+                location: "Nashik, Maharashtra",
+                img: "ramkund.png",
+                description: "Ramkund is a sacred bathing ghat on the banks of the Godavari river in the heart of Nashik. According to Hindu mythology, Lord Rama bathed here during his 14-year exile. The kund is considered one of the most important pilgrimage sites in India.\n\nDuring the Kumbh Mela, millions of devotees take a holy dip in Ramkund. The ghat is lined with temples and the evening aarti ceremony creates a mesmerizing spiritual atmosphere. Immersion of ashes of the deceased is also performed here, making it one of the most sacred ghats in the country.",
+                lat: 20.0000,
+                lng: 73.7900,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "October – March",
+                temp: "18 – 33°C"
+            },
+            {
+                title: "Anjneri Hill",
+                subtitle: "The legendary birthplace of Lord Hanuman",
+                location: "Nashik, Maharashtra",
+                img: "anjneri_hill.png",
+                description: "Anjneri Hill is a sacred mountain believed to be the birthplace of Lord Hanuman. Located about 25 km from Nashik, the hill rises to 4,264 feet and offers a challenging yet rewarding trek through lush green forests and rocky terrain.\n\nThe summit features an ancient temple dedicated to Goddess Anjani (Hanuman's mother), rock-cut water cisterns, and breathtaking 360-degree views of the Sahyadri range. During the monsoon, the hill is surrounded by clouds, creating an otherworldly experience. The trek is popular among adventure enthusiasts and pilgrims alike.",
+                lat: 19.9300,
+                lng: 73.5500,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "October – February",
+                temp: "16 – 28°C"
+            },
+            {
+                title: "Coin Museum",
+                subtitle: "India's first museum dedicated to numismatics",
+                location: "Nashik, Maharashtra",
+                img: "coin_museum.png",
+                description: "The Indian Institute of Research in Numismatic Studies (IIRNS) Coin Museum in Nashik is one of the finest numismatic museums in Asia. It houses over 65,000 coins spanning 2,500 years of Indian history — from the punch-marked coins of the Mauryas to modern Indian currency.\n\nThe museum features rare gold coins of the Gupta dynasty, Mughal silver rupees, and British-era coinage. Interactive displays explain the evolution of trade and currency in the subcontinent. It's a hidden gem that history buffs absolutely love.",
+                lat: 19.9800,
+                lng: 73.7200,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "Year-round",
+                temp: "20 – 35°C"
+            },
+            {
+                title: "Dugarwadi Waterfall",
+                subtitle: "A stunning monsoon waterfall hidden in the Sahyadris",
+                location: "Nashik, Maharashtra",
+                img: "dugarwadi_waterfall.png",
+                description: "Dugarwadi Waterfall is a magnificent 15-meter cascade located about 30 km from Nashik, nestled deep in the Western Ghats. During the monsoon season (July–September), the waterfall transforms into a roaring torrent surrounded by emerald green forests.\n\nThe approach through winding village roads and terraced farms is scenic in itself. Local villagers have set up small eateries serving hot bhajias and chai. The waterfall pool at the base is perfect for wading. It remains one of Nashik's best-kept natural secrets.",
+                lat: 19.8800,
+                lng: 73.6200,
+                airport: "Nashik Ozar Airport",
+                railway: "Nashik Road Railway Station",
+                bestTime: "July – October",
+                temp: "18 – 28°C"
+            },
+            // ─── Mumbai Places (index 14-20) ───
+            {
+                title: "Raigad Fort",
+                subtitle: "The majestic capital of the Maratha Empire",
+                location: "Raigad, Maharashtra",
+                img: "raigad_fort.jpg",
+                description: "Raigad Fort, perched at 2,700 feet above sea level in the Sahyadri mountains, served as the capital of Chhatrapati Shivaji Maharaj's Maratha Empire. The coronation of Shivaji Maharaj took place here on June 6, 1674, marking the formal establishment of the Maratha kingdom.\n\nThe fort features the iconic Maha Darwaja (Great Gate) standing 66 feet tall, the Jagdishwar Temple, the grand Raj Sabhamandap (court hall), and the tomb of Shivaji Maharaj. A ropeway now connects the base to the fort, offering breathtaking views of the surrounding valleys. The fort's strategic design with multiple gates and watchtowers showcases the military genius of the Maratha era.",
+                lat: 18.2352,
+                lng: 73.4478,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "Veer / Mangaon Railway Station",
+                bestTime: "October – March",
+                temp: "24 – 36°C"
+            },
+            {
+                title: "Marine Drive",
+                subtitle: "The Queen's Necklace — Mumbai's iconic promenade",
+                location: "Mumbai, Maharashtra",
+                img: "marine_drive.png",
+                description: "Marine Drive is a 3.6 km long C-shaped promenade along the coast of South Mumbai, stretching from Nariman Point to Chowpatty Beach. Built in the 1920s, it's officially named Netaji Subhash Chandra Bose Road but is affectionately called the Queen's Necklace because of the way the street lights form a glittering arc at night.\n\nThe art deco buildings along Marine Drive are UNESCO heritage listed. The promenade is where all of Mumbai comes together — joggers at dawn, couples at sunset, and families enjoying bhelpuri from the stalls. It's the city's living room and the best place to feel Mumbai's pulse.",
+                lat: 18.9432,
+                lng: 72.8235,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "Churchgate Railway Station",
+                bestTime: "November – February",
+                temp: "22 – 34°C"
+            },
+            {
+                title: "Elephanta Caves",
+                subtitle: "UNESCO World Heritage rock-cut cave temples",
+                location: "Mumbai, Maharashtra",
+                img: "elephanta_caves.jpg",
+                description: "The Elephanta Caves are a collection of cave temples predominantly dedicated to Lord Shiva, located on Elephanta Island (Gharapuri) in Mumbai Harbour. Dating back to the 5th-8th century CE, these caves are a UNESCO World Heritage Site and showcase some of the finest examples of Indian rock-cut architecture.\n\nThe main cave features the famous 20-foot tall Trimurti sculpture depicting Shiva as the Creator, Preserver, and Destroyer. The caves are reached by a scenic one-hour ferry ride from the Gateway of India followed by a toy train and climb up the hill. The annual Elephanta Festival of classical music and dance adds to the island's cultural significance.",
+                lat: 18.9633,
+                lng: 72.9315,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "Gateway of India Ferry Terminal",
+                bestTime: "November – February",
+                temp: "22 – 34°C"
+            },
+            {
+                title: "Chhatrapati Shivaji Terminus",
+                subtitle: "UNESCO World Heritage Victorian Gothic railway station",
+                location: "Mumbai, Maharashtra",
+                img: "csmt_terminus.jpg",
+                description: "Chhatrapati Shivaji Maharaj Terminus (CSMT), formerly Victoria Terminus, is a UNESCO World Heritage Site and one of the most magnificent railway stations in the world. Built in 1888 by British architect Frederick William Stevens, the station is a stunning blend of Victorian Gothic Revival and traditional Indian architecture.\n\nThe building features turrets, pointed arches, stained glass windows, ornamental tiles, and a grand central dome topped with a figure representing 'Progress'. Still serving as Mumbai's busiest railway station, it handles over 3 million commuters daily.",
+                lat: 18.9398,
+                lng: 72.8355,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "CSMT (itself)",
+                bestTime: "November – February",
+                temp: "22 – 34°C"
+            },
+            {
+                title: "Siddhivinayak Temple",
+                subtitle: "Mumbai's most revered Ganesh temple",
+                location: "Mumbai, Maharashtra",
+                img: "siddhivinayak_temple.png",
+                description: "The Shree Siddhivinayak Temple in Prabhadevi is one of the most visited and richest temples in Mumbai, dedicated to Lord Ganesha. Built in 1801 by Laxman Vithu and Deubai Patil, the temple's idol is unique — the trunk curves to the right, which is considered extremely auspicious.\n\nThe temple attracts devotees from all walks of life including Bollywood celebrities and politicians. Tuesday darshans see queues extending over 2 km. The temple has been renovated with marble and gold plating, and the inner sanctum features a wooden door with Ashtavinayak carvings.",
+                lat: 19.0167,
+                lng: 72.8304,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "Dadar Railway Station",
+                bestTime: "Year-round",
+                temp: "24 – 36°C"
+            },
+            {
+                title: "Juhu Beach",
+                subtitle: "Mumbai's most famous beach and street food paradise",
+                location: "Mumbai, Maharashtra",
+                img: "juhu_beach.jpg",
+                description: "Juhu Beach is Mumbai's most iconic beach stretching 6 km along the Arabian Sea coast. It's where Bollywood stars live, cricket legends practice, and millions of Mumbaikars unwind every evening. The beach is famous for its street food — pav bhaji, pani puri, bhelpuri, and vada pav sold by hundreds of vendors.\n\nSunsets at Juhu are legendary, with the sky turning shades of orange and purple over the sea. On weekends, the beach comes alive with horse rides, giant wheels, and impromptu cricket matches. It's the most democratic space in Mumbai where billionaires and street vendors share the same sand.",
+                lat: 19.0988,
+                lng: 72.8267,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "Andheri Railway Station",
+                bestTime: "October – March",
+                temp: "22 – 34°C"
+            },
+            {
+                title: "Haji Ali Dargah",
+                subtitle: "A stunning mosque floating on the Arabian Sea",
+                location: "Mumbai, Maharashtra",
+                img: "haji_ali.jpg",
+                description: "Haji Ali Dargah is an iconic mosque and tomb situated on a small islet 500 meters from the coast in the middle of Worli Bay. Built in 1431, the dargah is dedicated to the Muslim saint Pir Haji Ali Shah Bukhari and is one of Mumbai's most recognizable landmarks.\n\nThe pathway to the dargah is submerged during high tide, creating the illusion of a floating shrine. The white marble structure with its tall minaret is stunning against the blue sea. People of all faiths visit, and the qawwali performances inside create a deeply moving spiritual experience.",
+                lat: 18.9827,
+                lng: 72.8089,
+                airport: "Chhatrapati Shivaji Intl Airport (BOM)",
+                railway: "Mahalaxmi Railway Station",
+                bestTime: "October – March",
+                temp: "24 – 34°C"
+            },
+            // ─── Kolhapur Places (index 21-27) ───
+            {
+                title: "Mahalakshmi Temple",
+                subtitle: "One of the Shakti Peethas — Kolhapur's divine jewel",
+                location: "Kolhapur, Maharashtra",
+                img: "mahalakshmi_temple.jpg",
+                description: "The Mahalakshmi Temple in Kolhapur is one of the most sacred Shakti Peethas dedicated to Goddess Mahalakshmi (Ambabai). Built during the Chalukya dynasty in the 7th century, the temple is an architectural marvel with intricately carved stone pillars, a beautifully sculpted idol adorned with precious jewels, and a unique gemstone on the idol's crown that reflects sunlight in a dazzling manner.\n\nThe temple attracts millions of devotees annually, especially during Navratri and Kojagiri Purnima. The idol is made of gemstone and weighs approximately 40 kg. The nearby Rankala Lake adds to the spiritual atmosphere of the city.",
+                lat: 16.6946,
+                lng: 74.2306,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "October – March",
+                temp: "20 – 35°C"
+            },
+            {
+                title: "Panhala Fort",
+                subtitle: "The largest fort in the Deccan and Shivaji's stronghold",
+                location: "Kolhapur, Maharashtra",
+                img: "panhala_fort.jpg",
+                description: "Panhala Fort is one of the largest forts in the Deccan region, located 20 km northwest of Kolhapur at an elevation of 3,127 feet. Built between 1178 and 1209 CE by the Shilahara ruler Bhoja II, the fort has played a crucial role in Maratha history, most notably during Chhatrapati Shivaji Maharaj's legendary escape from the Mughal siege in 1660.\n\nThe fort features three massive double-walled gates (Teen Darwaza), the Sajja Kothi (Shivaji's residence), and granaries that could store enough grain to last for years. The panoramic views of the valley below and the monsoon mist make Panhala a breathtaking destination.",
+                lat: 16.8126,
+                lng: 74.1107,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "June – February",
+                temp: "18 – 32°C"
+            },
+            {
+                title: "Rankala Lake",
+                subtitle: "Kolhapur's beloved evening hangout and heritage lake",
+                location: "Kolhapur, Maharashtra",
+                img: "rankala_lake.png",
+                description: "Rankala Lake is a historic lake in the heart of Kolhapur, surrounded by beautiful gardens and a bustling promenade. The lake is home to the iconic Rankala Temple tower that rises from the center of the water. Originally an ancient reservoir, it has been the city's favorite relaxation spot for centuries.\n\nIn the evenings, the lakeside comes alive with street food vendors selling Kolhapuri misal, bhel, and the famous tambda-pandhra rassa. The newly developed jogging track, boat rides, and the stunning sunset views make it one of the most charming urban lakes in Maharashtra.",
+                lat: 16.6820,
+                lng: 74.2230,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "October – March",
+                temp: "20 – 34°C"
+            },
+            {
+                title: "New Palace (Maharaja's Palace)",
+                subtitle: "A grand Indo-Saracenic palace museum",
+                location: "Kolhapur, Maharashtra",
+                img: "new_palace.jpg",
+                description: "The New Palace, also known as the Maharaja's Palace, was built in 1884 by Maharaja Chhatrapati Shahu Maharaj. The palace is a stunning example of Indo-Saracenic architecture combining Jain, Hindu, and Islamic styles with British colonial influences.\n\nNow serving as the Shahaji Chhatrapati Museum, it houses an impressive collection of arms, armor, royal costumes, stuffed wildlife, and the personal belongings of the Kolhapur royal family. The Darbar Hall with its Belgian chandeliers and Italian marble flooring is breathtaking.",
+                lat: 16.7000,
+                lng: 74.2350,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "October – March",
+                temp: "20 – 35°C"
+            },
+            {
+                title: "Jyotiba Temple",
+                subtitle: "A hilltop temple with panoramic views of Kolhapur",
+                location: "Kolhapur, Maharashtra",
+                img: "jyotiba_temple.png",
+                description: "The Jyotiba Temple is a revered hilltop shrine located about 18 km from Kolhapur, dedicated to Jyotiba — a combined form of Brahma, Vishnu, and Shiva. Perched at 3,124 feet, the temple offers spectacular views of the surrounding valleys and the distant Arabian Sea on clear days.\n\nThe temple is famous for its vibrant fairs during Chaitra Purnima when thousands of devotees climb the 300+ steps adorned with colorful gulal. The four dome structure with painted walls and the annual Yatra festival make it one of Kolhapur's most important cultural landmarks.",
+                lat: 16.7750,
+                lng: 74.0950,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "October – March",
+                temp: "18 – 30°C"
+            },
+            {
+                title: "Dajipur Wildlife Sanctuary",
+                subtitle: "Home to the Indian Bison and rare wildlife",
+                location: "Kolhapur, Maharashtra",
+                img: "dajipur_sanctuary.png",
+                description: "Dajipur Wildlife Sanctuary (Radhanagari), located about 80 km from Kolhapur, is Maharashtra's first wildlife sanctuary and the only habitat of the endangered Indian Bison (Gaur) in the Western Ghats. Spread over 350 sq km of dense forest, it's a biodiversity hotspot.\n\nThe sanctuary is home to leopards, sloth bears, giant squirrels, king cobras, and over 225 species of birds. The misty hills, cascading streams, and bamboo forests create a jungle experience right out of a nature documentary. Safari jeeps take visitors deep into the forest.",
+                lat: 16.4000,
+                lng: 73.9900,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "October – May",
+                temp: "16 – 32°C"
+            },
+            {
+                title: "Kolhapuri Chappal Market",
+                subtitle: "The birthplace of the world-famous Kolhapuri chappal",
+                location: "Kolhapur, Maharashtra",
+                img: "kolhapuri_chappal.jpg",
+                description: "The Kolhapuri Chappal Market in the Mahadwar Road area is where the legendary hand-crafted leather sandals originate. These GI-tagged chappals have been made by local artisans for over 800 years using traditional vegetable-tanned leather techniques passed down through generations.\n\nVisitors can watch artisans craft each chappal by hand, choose from hundreds of designs, and get custom-made pairs at factory prices. Beyond chappals, the market lane is also famous for Kolhapuri jewelry (saaj, thushi, nath), Kolhapuri jaggery, and the city's iconic masala and spice blends.",
+                lat: 16.6950,
+                lng: 74.2310,
+                airport: "Kolhapur Airport (KLH)",
+                railway: "Kolhapur Railway Station",
+                bestTime: "Year-round",
+                temp: "20 – 35°C"
+            }
+        ];
+
+        // ─── Detail Modal Logic ───
+        function openDetailModal() {
+            const place = exploreData[currentExploreIndex];
+            
+            // Fill in detail modal content
+            document.getElementById('detail-hero').style.backgroundImage = `url('${place.img}')`;
+            document.getElementById('detail-title').textContent = place.title;
+            document.getElementById('detail-location').textContent = place.location;
+            document.getElementById('detail-subtitle').textContent = place.subtitle;
+            document.getElementById('detail-description').textContent = place.description;
+            document.getElementById('detail-airport').textContent = place.airport;
+            document.getElementById('detail-railway').textContent = place.railway;
+            document.getElementById('detail-best-time').textContent = place.bestTime;
+            document.getElementById('detail-temp').textContent = place.temp;
+
+            // Google Maps link
+            document.getElementById('detail-maps-link').href = 
+                `https://www.google.com/maps?q=${place.lat},${place.lng}`;
+
+            // OpenStreetMap embed
+            const mapContainer = document.getElementById('detail-map-container');
+            mapContainer.innerHTML = `<iframe 
+                src="https://www.openstreetmap.org/export/embed.html?bbox=${place.lng - 0.02},${place.lat - 0.015},${place.lng + 0.02},${place.lat + 0.015}&layer=mapnik&marker=${place.lat},${place.lng}" 
+                loading="lazy"></iframe>`;
+
+            // Hide explore modal, show detail modal
+            document.getElementById('explore-modal').style.display = 'none';
+            document.getElementById('detail-modal').classList.add('show');
+            document.getElementById('detail-modal').scrollTop = 0;
+
+            // Load reviews for this place
+            loadReviews(place.title);
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.remove('show');
+            // Re-open the explore carousel
+            document.getElementById('explore-modal').style.display = 'flex';
+        }
+
+        // Mood Explorer Logic
+        const moodDatabase = {
+            spiritual: [
+                { title: "Ramdara Temple", desc: "A quiet temple where nature and devotion come together beautifully.", img: "spiritual_1.png" },
+                { title: "Isckon Temple", desc: "A beautiful temple offering calm vibes and Krishna devotion", img: "spiritual_2.jpg" },
+                { title: "Bhimashankar Temple", desc: "A holy place dedicated to Lord Shiva, known for its natural beauty.", img: "spiritual_3.png" },
+                { title: "Pataleshwar Cave Temple", desc: "A hidden heritage site in Pune with timeless rock-cut design.", img: "spiritual_4.jpg" }
+            ],
+            historic: [
+                { title: "Shaniwar Wada", desc: "A magnificent historic fortification representing the legacy of the Maratha Empire.", img: "historic_1.jpg" },
+                { title: "Raigad Fort", desc: "A sweeping historic fortress offering stunning climbing views over valleys.", img: "historic_2.jpg" },
+                { title: "Vetal Tekdi", desc: "An ancient rocky plateau offering a sprawling escape from the city.", img: "historic_3.jpg" },
+                { title: "Aga Khan Palace", desc: "A majestic palace with deep ties to India's freedom movement.", img: "historic_4.jpg" }
+            ],
+            nature: [
+                { title: "Beautiful Sarasbaug", desc: "A peaceful garden for a calm stroll.", img: "nature_1.jpg" },
+                { title: "Friendship Garden", desc: "Breathe in peace at this serene environment.", img: "nature_2.jpg" },
+                { title: "Espresso Garden", desc: "A cozy café in Pune known for its great coffee and relaxing vibe.", img: "nature_3.jpg" },
+                { title: "Panshet Dam", desc: "A scenic dam near Pune, perfect for nature views and relaxation.", img: "nature_4.jpg" }
+            ],
+            city: [
+                { title: "Streets of Europe", desc: "Vibrant architecture and modern commerce.", img: "city_1.jpg" },
+                { title: "Sky Walk Views", desc: "Enjoy majestic city views from high above.", img: "city_2.png" },
+                { title: "Koregaon Park", desc: "A stylish area in Pune blending nature, food, and nightlife.", img: "city_3.png" },
+                { title: "Phoenix Marketcity", desc: "A popular shopping mall in Pune known for brands, food, and entertainment.", img: "city_4.jpg" }
+            ]
+        };
+
+        function selectMood(moodType, element) {
+            document.querySelectorAll('.mood-chip').forEach(chip => chip.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            document.getElementById('mood-search').value = moodType;
+            renderMoodResults(moodDatabase[moodType] || []);
+        }
+
+        function handleMoodSearch() {
+            const query = document.getElementById('mood-search').value.toLowerCase().trim();
+            if (!query) {
+                document.getElementById('mood-results').innerHTML = '';
+                document.querySelectorAll('.mood-chip').forEach(chip => chip.classList.remove('active'));
+                return;
+            }
+
+            const moodKeywords = {
+                spiritual: ['god', 'krishna', 'shiva', 'ganpati', 'temple', 'holy', 'devotion', 'pray', 'shrine', 'sacred', 'religion', 'spiritual', 'meditation', 'culture', 'peace'],
+                historic: ['fort', 'history', 'castle', 'king', 'ancient', 'palace', 'war', 'monument', 'ruins', 'historic', 'heritage', 'empire', 'maratha', 'wada'],
+                nature: ['tree', 'water', 'lake', 'mountain', 'hill', 'park', 'garden', 'green', 'peace', 'nature', 'scenic', 'dam', 'forest', 'relax', 'calm'],
+                city: ['mall', 'shopping', 'urban', 'market', 'cafe', 'nightlife', 'buildings', 'modern', 'city', 'food', 'vibes', 'party', 'europe', 'street']
+            };
+
+            let matchedPlaces = new Set();
+
+            for (const [mood, places] of Object.entries(moodDatabase)) {
+                let matchesCategory = mood.includes(query);
+                
+                // Advanced category matching by synonyms/keywords (if query is at least 3 chars)
+                if (!matchesCategory && query.length >= 3) {
+                    matchesCategory = moodKeywords[mood].some(kw => query.includes(kw) || kw.startsWith(query) || query.startsWith(kw));
+                }
+
+                places.forEach(p => {
+                    const titleMatch = p.title.toLowerCase().includes(query);
+                    const descMatch = p.desc.toLowerCase().includes(query);
+                    
+                    if (matchesCategory || titleMatch || descMatch) {
+                        matchedPlaces.add(p);
+                    }
+                });
+            }
+
+            // Sync visual active state of mood chips if they squarely match a category
+            document.querySelectorAll('.mood-chip').forEach(chip => chip.classList.remove('active'));
+            for (const mood of Object.keys(moodDatabase)) {
+                if (query.length >= 3 && (mood.includes(query) || moodKeywords[mood].some(kw => query.includes(kw) || kw.startsWith(query)))) {
+                    const chipToActivate = Array.from(document.querySelectorAll('.mood-chip'))
+                        .find(chip => chip.getAttribute('onclick').includes(mood));
+                    if (chipToActivate) chipToActivate.classList.add('active');
+                    break;
+                }
+            }
+
+            const results = Array.from(matchedPlaces);
+            renderMoodResults(results.slice(0, 8));
+        }
+
+        function renderMoodResults(places) {
+            const container = document.getElementById('mood-results');
+            if (places.length === 0) {
+                container.innerHTML = '<p style="color:#999; margin-top:20px; font-style: italic;">No exact matches found. Try another mood like "nature" or "historic"!</p>';
+                return;
+            }
+
+            container.innerHTML = places.map(place => `
+                <div class="mood-result-card" style="animation: fadeIn 0.5s ease;">
+                    <div class="mood-result-img" style="background-image: url('${place.img}')"></div>
+                    <div class="mood-result-content">
+                        <h4>${place.title}</h4>
+                        <p>${place.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ─── Hidden Gem Scanner Logic ───
+        const targetGate = { lat: 18.524609, lng: 73.878624 }; // Raigad Maha Darwaja
+        let geoWatchId = null;
+
+        function openHiddenGemScanner() {
+            document.getElementById('scanner-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+            startNavigation();
+        }
+
+        function closeScanner() {
+            document.getElementById('scanner-modal').classList.remove('show');
+            document.body.style.overflow = '';
+            if (geoWatchId) navigator.geolocation.clearWatch(geoWatchId);
+        }
+
+        async function startBeaconScan() {
+            const statusText = document.getElementById('scanner-status');
+            const scanBtn = document.getElementById('scan-btn');
+
+            statusText.innerHTML = 'Scanning Bluetooth for <span class="status-highlight">Chhatrapati Beacon</span>...';
+
+            if (!navigator.bluetooth) {
+                statusText.innerHTML = '⚠️ Web Bluetooth not supported. Use Chrome/Edge on HTTPS or localhost.';
+                alert('Web Bluetooth API requires HTTPS/localhost and Chrome/Edge.');
+                return;
+            }
+
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'Chatrapati' }]
+                });
+
+                statusText.innerHTML = `✅ Connected to <span class="status-highlight">${device.name}</span> — Beacon found at Samadhi!`;
+                scanBtn.style.display = 'none';
+
+                // Show the 3D fort view
+                document.getElementById('scanner-found').classList.add('show');
+            } catch (error) {
+                statusText.innerHTML = '📡 No beacon found nearby. Try standing closer to the fort gate! <br><small style="color:#666;">Or check if your Bluetooth is enabled.</small>';
+                console.log('Bluetooth scan error:', error);
+            }
+        }
+
+        function startNavigation() {
+            if (!('geolocation' in navigator)) return;
+
+            geoWatchId = navigator.geolocation.watchPosition((position) => {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                const distance = calculateDistance(userLat, userLng, targetGate.lat, targetGate.lng);
+
+                document.getElementById('scanner-dist').textContent = distance < 1
+                    ? `${Math.round(distance * 1000)}m`
+                    : `${distance.toFixed(2)} km`;
+
+                if (distance < 0.05) {
+                    document.getElementById('scanner-status').innerHTML =
+                        '📍 You have arrived at the <span class="status-highlight">Great Gate!</span> Scanning for Beacon...';
+                }
+            }, (err) => {
+                console.log('Geolocation error:', err);
+                document.getElementById('scanner-dist').textContent = 'N/A';
+            }, { enableHighAccuracy: true });
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const p = 0.017453292519943295;
+            const c = Math.cos;
+            const a = 0.5 - c((lat2 - lat1) * p) / 2 +
+                c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+            return 12742 * Math.asin(Math.sqrt(a));
+        }
+
+        // Compass heading
+        window.addEventListener('deviceorientation', (event) => {
+            const heading = event.alpha;
+            if (heading !== null) {
+                document.getElementById('navigation-arrow').style.transform = `rotate(${heading}deg)`;
+            }
+        });
+
+        // ─── Supabase Setup for Reviews ───
+        const SUPABASE_URL = 'https://dargdraljdimmiygkarr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhcmdkcmFsamRpbW1peWdrYXJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTAyMjQsImV4cCI6MjA5MTI2NjIyNH0.I2RMrSmP13COFUqK9T2C9Widh88h8P3z_kzk7uw9zQA';
+        const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let selectedRating = 0;
+
+        // Star rating click handler
+        document.getElementById('star-rating').addEventListener('click', (e) => {
+            if (e.target.classList.contains('star')) {
+                selectedRating = parseInt(e.target.dataset.value);
+                document.querySelectorAll('#star-rating .star').forEach(s => {
+                    s.classList.toggle('active', parseInt(s.dataset.value) <= selectedRating);
+                });
+            }
+        });
+
+        // Submit review to Supabase
+        async function submitReview() {
+            const text = document.getElementById('review-text').value.trim();
+            if (!text || selectedRating === 0) {
+                alert('Please select a star rating and write a review.');
+                return;
+            }
+
+            const sessionData = localStorage.getItem('sessionUser');
+            const user = sessionData ? JSON.parse(sessionData) : { name: 'Anonymous', email: '' };
+            const place = exploreData[currentExploreIndex];
+
+            const btn = document.getElementById('review-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                const { data, error } = await sbClient
+                    .from('reviews')
+                    .insert([{
+                        place_name: place.title,
+                        user_name: user.name,
+                        user_email: user.email,
+                        rating: selectedRating,
+                        review_text: text,
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (error) throw error;
+
+                // Reset form
+                document.getElementById('review-text').value = '';
+                selectedRating = 0;
+                document.querySelectorAll('#star-rating .star').forEach(s => s.classList.remove('active'));
+
+                // Reload reviews
+                loadReviews(place.title);
+            } catch (err) {
+                console.error('Review submit error:', err);
+                alert('Failed to submit review: ' + (err.message || err.details || JSON.stringify(err)));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Submit Review';
+            }
+        }
+
+        // Load reviews from Supabase
+        async function loadReviews(placeName) {
+            const list = document.getElementById('reviews-list');
+            list.innerHTML = '<div class="reviews-empty">Loading reviews...</div>';
+
+            try {
+                const { data, error } = await sbClient
+                    .from('reviews')
+                    .select('*')
+                    .eq('place_name', placeName)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div class="reviews-empty">No reviews yet. Be the first to share your experience! ✨</div>';
+                    return;
+                }
+
+                list.innerHTML = data.map(r => {
+                    const initials = (r.user_name || 'A').charAt(0).toUpperCase();
+                    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+                    const date = new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                    return `
+                        <div class="review-card">
+                            <div class="review-card-header">
+                                <div class="review-card-user">
+                                    <div class="review-card-avatar">${initials}</div>
+                                    <div>
+                                        <div class="review-card-name">${r.user_name || 'Anonymous'}</div>
+                                        <div class="review-card-date">${date}</div>
+                                    </div>
+                                </div>
+                                <div class="review-card-stars">${stars}</div>
+                            </div>
+                            <div class="review-card-text">${r.review_text}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error('Load reviews error:', err);
+                list.innerHTML = '<div class="reviews-empty">Could not load reviews. Please try again later.</div>';
+            }
+        }
+
+        // Scan for Hidden Gem
+        function scanHiddenGem() {
+            const place = exploreData[currentExploreIndex];
+            if (place.title === 'Raigad Fort') {
+                openHiddenGemScanner();
+                return;
+            }
+            const btn = document.getElementById('hidden-gem-btn');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" style="animation: spin 1s linear infinite;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Scanning...';
+            setTimeout(() => {
+                const gems = [
+                    `🏺 Hidden Fact: This place has a secret underground passage that dates back to the Peshwa era!`,
+                    `🌿 Local Tip: Visit the small lane behind this site for the best Misal Pav in the area.`,
+                    `📸 Photo Spot: The best sunset view is from the western terrace, rarely known to tourists.`,
+                    `🎵 Cultural Secret: Local artists perform traditional Lavani here every full moon night.`,
+                    `🍽️ Food Gem: There's a 100-year-old chai stall nearby that serves the best cutting chai.`,
+                    `🏛️ Architecture: The ceiling carvings inside have 108 unique patterns — count them!`
+                ];
+                const gem = gems[Math.floor(Math.random() * gems.length)];
+                btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> ${gem}`;
+                btn.style.background = 'linear-gradient(135deg, #2d6a4f, #1b4332)';
+                btn.style.borderColor = '#52b788';
+                btn.style.color = '#b7e4c7';
+            }, 1500);
+        }
+
+        // ─── Events / Festivals Tab Logic ───
+        function switchMainTab(tab, element) {
+            // Update main tab buttons
+            document.querySelectorAll('.event-main-tab').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+
+            // Toggle panels
+            document.getElementById('festivals-panel').classList.toggle('active', tab === 'festivals');
+            document.getElementById('events-panel').classList.toggle('active', tab === 'events');
+
+            // Reset sub-tabs to 'All' when switching
+            if (tab === 'festivals') {
+                const allBtn = document.querySelector('#festivals-panel .event-sub-tab');
+                filterFestivals('all', allBtn);
+            } else {
+                const allBtn = document.querySelector('#events-panel .event-sub-tab');
+                filterCityEvents('all', allBtn);
+            }
+        }
+
+        function filterFestivals(status, element) {
+            // Update sub-tab buttons within festivals panel
+            document.querySelectorAll('#festivals-panel .event-sub-tab').forEach(t => t.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            document.querySelectorAll('#festivals-grid .event-card').forEach(card => {
+                if (status === 'all' || card.getAttribute('data-status') === status) {
+                    card.classList.remove('events-hidden');
+                    card.style.animation = 'fadeIn 0.5s ease';
+                } else {
+                    card.classList.add('events-hidden');
+                }
+            });
+        }
+
+        function filterCityEvents(city, element) {
+            // Update sub-tab buttons within events panel
+            document.querySelectorAll('#events-panel .event-sub-tab').forEach(t => t.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            document.querySelectorAll('#events-city-grid .event-card').forEach(card => {
+                if (city === 'all' || card.getAttribute('data-city') === city) {
+                    card.classList.remove('events-hidden');
+                    card.style.animation = 'fadeIn 0.5s ease';
+                } else {
+                    card.classList.add('events-hidden');
+                }
+            });
+        }
+
+        // ─── Event Card Click → Popup ───
+        function openEventPopup(card) {
+            const imgEl = card.querySelector('.event-card-img');
+            const bgImage = imgEl ? imgEl.style.backgroundImage : '';
+            const date = card.querySelector('.event-date-badge')?.textContent || '';
+            const statusEl = card.querySelector('.event-status-badge');
+            const statusText = statusEl?.textContent || '';
+            const statusClass = statusEl?.classList.contains('ongoing') ? 'ongoing' :
+                                statusEl?.classList.contains('upcoming') ? 'upcoming' : 'previous';
+            const title = card.querySelector('.event-card-content h4')?.textContent || '';
+            const desc = card.querySelector('.event-card-content p')?.textContent || '';
+            const location = card.querySelector('.event-card-location')?.textContent || '';
+
+            document.getElementById('event-popup-img').style.backgroundImage = bgImage;
+            document.getElementById('event-popup-date').textContent = date;
+            const popupStatus = document.getElementById('event-popup-status');
+            popupStatus.textContent = statusText;
+            popupStatus.className = 'popup-status ' + statusClass;
+            document.getElementById('event-popup-title').textContent = title;
+            document.getElementById('event-popup-location').textContent = location;
+            document.getElementById('event-popup-desc').textContent = desc;
+
+            document.getElementById('event-detail-overlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEventPopup(e) {
+            if (e && e.target !== e.currentTarget && !e.target.classList.contains('event-detail-close')) return;
+            document.getElementById('event-detail-overlay').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Attach click handlers to all event cards
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.event-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    openEventPopup(this);
+                });
+            });
+        });
+
+        // Initialize default mood on load
+        window.addEventListener('DOMContentLoaded', () => {
+            selectMood('spiritual', document.querySelector('.mood-chip'));
+        });
+    </script>
+
+    <!-- Floating Chatbot Widget -->
+    <div class="chatbot-label" id="chatbot-label">💬 Ask me about Maharashtra!</div>
+
+    <button class="chatbot-toggle" id="chatbot-toggle" aria-label="Open chatbot">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+            <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+        </svg>
+    </button>
+
+    <div class="chatbot-container" id="chatbot-container">
+        <div class="chatbot-header">
+            <div class="chatbot-header-info">
+                <div class="chatbot-avatar">🏛️</div>
+                <div class="chatbot-header-text">
+                    <h4>Tourist Niketan AI</h4>
+                    <span>● Online — Ask me anything!</span>
+                </div>
+            </div>
+            <button class="chatbot-close" id="close-chatbot">&times;</button>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div class="chatbot-welcome" id="chatbot-welcome">
+            <div class="welcome-emoji">🙏</div>
+            <h3>Namaste!</h3>
+            <p>I'm your Maharashtra travel guide. Ask me about places, food, history, or plan your trip!</p>
+            <div class="chatbot-suggestions">
+                <button class="suggestion-chip" data-query="Best places to visit in Pune">📍 Best places in Pune</button>
+                <button class="suggestion-chip" data-query="Tell me about Shaniwar Wada">🏰 Shaniwar Wada</button>
+                <button class="suggestion-chip" data-query="Famous food in Maharashtra">🍛 Famous food</button>
+                <button class="suggestion-chip" data-query="Weekend getaways near Pune">🏞️ Weekend getaways</button>
+                 <button class="suggestion-chip" data-query="Contact number to get help from local people">📞 Contact number for help</button>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div id="chat-display-area"></div>
+
+        <!-- Input Area -->
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Type your message..." autocomplete="off">
+            <button id="chatbot-send" aria-label="Send message">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
